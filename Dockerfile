@@ -12,22 +12,25 @@ RUN yum -y install epel-release && \
     git clone https://github.com/open62541/open62541.git --branch=v0.3.0 open62541 && \
     mkdir ~/4diac/open62541/build && cd $_ && \
     cmake3 -DBUILD_SHARED_LIBS=ON \
-           -DCMAKE_BUILD_TYPE=Debug \
+           -DCMAKE_BUILD_TYPE=Release \
            -DUA_ENABLE_AMALGAMATION=ON .. && \
     make -j && \
+    make install && \
     mkdir ~/4diac/forte/build && cd $_ && \
-    cmake3 -DCMAKE_BUILD_TYPE=Debug -DFORTE_ARCHITECTURE=Posix -DFORTE_MODULE_CONVERT=ON \
+    cmake3 -DCMAKE_BUILD_TYPE=Release -DFORTE_ARCHITECTURE=Posix -DFORTE_MODULE_CONVERT=ON \
            -DFORTE_COM_ETH=ON -DFORTE_MODULE_IEC61131=ON -DFORTE_COM_OPC_UA=ON \
            -DFORTE_COM_OPC_UA_INCLUDE_DIR=$HOME/4diac/open62541/build \
            -DFORTE_COM_OPC_UA_LIB_DIR=$HOME/4diac/open62541/build/bin \
            -DFORTE_COM_OPC_UA_LIB=libopen62541.so .. && \
     make -j && \
+    make install && \
+    echo '/usr/local/lib' > /etc/ld.so.conf.d/forte.conf && ldconfig && \
     yum -y remove python-setuptools git gcc-c++ cmake3 make && \
     yum clean all && \
-    rm -rf /var/cache/yum
+    rm -rf /var/cache/yum && \
+    rm -rf /root/4diac
 
 EXPOSE 61499
-
 EXPOSE 4840
   
-CMD ["/root/4diac/forte/build/src/forte"]
+CMD ["/usr/local/bin/forte"]
